@@ -1,6 +1,19 @@
+require "redis"
 module Sequenced
   class Generator
-    attr_reader :record, :scope, :column, :start_at, :skip
+    attr_reader :record, :scope, :column, :start_at, :skip, :redis_client
+    class_attribute :default_redis_client
+
+    def self._default_redis_client
+      Redis.new(
+        url: ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" },
+        ssl_params: {
+          verify_mode: OpenSSL::SSL::VERIFY_NONE
+        }
+      )
+    end
+
+    self.default_redis_client ||= _default_redis_client
 
     def initialize(record, options = {})
       @record = record
@@ -8,11 +21,14 @@ module Sequenced
       @column = options[:column].to_sym
       @start_at = options[:start_at]
       @skip = options[:skip]
+      @redis_client = options[:redis_client] ||
+        Sequenced::Generator.default_redis_client ||
+        Sequenced::Generator._default_redis_client
     end
 
     def set
       return if skip? || id_set?
-      lock_table
+
       record.send(:"#{column}=", next_id)
     end
 
@@ -24,30 +40,40 @@ module Sequenced
       skip&.call(record)
     end
 
-    def next_id
-      next_id_in_sequence.tap do |id|
-        id += 1 until unique?(id)
-      end
+    def next_id(increment: true)
+      prepare_next_id
+
+      next_id_in_sequence(increment: increment)
     end
 
-    def next_id_in_sequence
+    def sequence_key
+      "sequenced:#{record.class}:#{column}:#{scope_to_key(*scope)}"
+    end
+
+    # private
+
+    def prepare_next_id
+      if redis_client.exists?(sequence_key)
+        return
+      end
+
+      lock_table
+
       start_at = self.start_at.respond_to?(:call) ? self.start_at.call(record) : self.start_at
-      if (last_record = find_last_record)
-        max(last_record.send(column) + 1, start_at)
-      else
-        start_at
-      end
+      last_id = find_last_record&.send(column) || 0
+
+      redis_client.set(sequence_key, max(last_id, start_at - 1), nx: true, ex: 86400)
     end
 
-    def unique?(id)
-      build_scope(*scope) do
-        rel = base_relation
-        rel = rel.where.not(record.class.primary_key => record.id) if record.persisted?
-        rel.where(column => id)
-      end.count == 0
+    def next_id_in_sequence(increment:)
+      redis_client.call(increment ? "incr" : "get", sequence_key)
     end
 
-    private
+    def scope_to_key(*columns)
+      return unless columns.present?
+
+      columns.collect { |c| "#{c}:#{record.send(c.to_sym)}" }.join(":")
+    end
 
     def lock_table
       if postgresql?
