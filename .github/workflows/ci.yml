@@ -43,11 +43,9 @@ jobs:
 
       - name: Run tests
         env:
-          DATABASE_URL: "sqlite3:test"
+          ADAPTER: sqlite3
           RAILS_ENV: test
-        run: |
-          bundle exec rails db:test:prepare
-          bundle exec rails test
+        run: bundle exec rake test
 
   postgres:
     runs-on: ubuntu-latest
@@ -74,8 +72,8 @@ jobs:
         image: postgres:12
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sequenced_test
         ports: ['5432:5432']
 
     steps:
@@ -93,8 +91,6 @@ jobs:
 
       - name: Run tests
         env:
-          DATABASE_URL: postgres://postgres:password@localhost:5432/test
+          ADAPTER: postgresql
           RAILS_ENV: test
-        run: |
-          bundle exec rails db:test:prepare
-          bundle exec rails test
+        run: bundle exec rake test

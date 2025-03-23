@@ -1,6 +1,11 @@
 require "test_helper"
 
 class MultipleSequencesTest < ActiveSupport::TestCase
+
+  def teardown
+    Doppelganger.delete_all
+  end
+
   test "works with simple multiple sequences" do
     doppelganger = Doppelganger.create!
     assert_equal 1, doppelganger.sequential_id_one

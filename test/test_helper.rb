@@ -1,18 +1,22 @@
-# Configure Rails Environment
-ENV["RAILS_ENV"] = "test"
-ENV["RAILS_ROOT"] = File.expand_path("../dummy", __FILE__)
+require "bundler/setup"
+Bundler.require(:default)
 
-require File.expand_path("../dummy/config/environment.rb", __FILE__)
-require "rails/test_help"
+require "minitest/autorun"
+require "active_record"
 
-Rails.backtrace_cleaner.remove_silencers!
+adapter = ENV["ADAPTER"]&.to_sym || :postgresql
+puts "Using #{adapter}"
 
-migrate_path = File.expand_path("../dummy/db/migrate/", __FILE__)
-if Gem::Version.new(Rails::VERSION::STRING) >= Gem::Version.new("6.0")
-  ActiveRecord::MigrationContext.new(migrate_path, ActiveRecord::SchemaMigration).up
-else
-  ActiveRecord::MigrationContext.new(migrate_path).up
+database_yml = File.expand_path("support/database.yml", __dir__)
+ActiveRecord::Base.configurations = YAML.load_file(database_yml)
+begin
+  ActiveRecord::Base.establish_connection(adapter)
+  ActiveRecord::Base.connection.execute("SELECT 1")
+rescue ActiveRecord::NoDatabaseError
+  puts "Creating database"
+  config = ActiveRecord::Base.configurations.configs_for(env_name: adapter.to_s, name: "primary").configuration_hash
+  ActiveRecord::Tasks::DatabaseTasks.create(config)
 end
 
-# Load support files
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].sort.each { |f| require f }
+require_relative "support/schema"
+require_relative "support/models"

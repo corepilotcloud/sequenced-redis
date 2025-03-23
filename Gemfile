@@ -9,12 +9,18 @@ gem "appraisal"
 gem "standardrb"
 
 group :development, :test do
-  gem "sqlite3", "~> 1.4.4"
-  # gem 'mysql2'
-  gem "pg"
+  # gem "mysql2"
   gem "net-imap"
   gem "net-pop"
   gem "net-smtp"
+  gem "pg"
+  gem "sqlite3", "~> 2.6"
+  if defined?(@ar_gem_requirement)
+    gem "activerecord", @ar_gem_requirement
+    gem "railties", @ar_gem_requirement
+  else
+    gem "activerecord" # latest
+  end
 end
 
 # Declare any dependencies that are still in development here instead of in
