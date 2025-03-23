@@ -9,7 +9,7 @@ gem "appraisal"
 gem "standardrb"
 
 group :development, :test do
-  gem "sqlite3", "~> 1.4.4"
+  gem "sqlite3"
   # gem 'mysql2'
   gem "pg"
   gem "net-imap"
