@@ -1,7 +1,6 @@
 require "test_helper"
 
 class MultipleSequencesTest < ActiveSupport::TestCase
-
   def teardown
     Doppelganger.delete_all
   end

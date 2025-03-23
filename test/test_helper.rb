@@ -4,6 +4,18 @@ Bundler.require(:default)
 require "minitest/autorun"
 require "active_record"
 
+module ResetRedisHelper
+  def setup
+    super
+    $sequenced_redis ||= Redis.new(url: ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" }, ssl_params: {verify_mode: OpenSSL::SSL::VERIFY_NONE})
+    $sequenced_redis.flushdb
+  end
+end
+
+class Minitest::Test
+  include ResetRedisHelper
+end
+
 adapter = ENV["ADAPTER"]&.to_sym || :postgresql
 puts "Using #{adapter}"
 

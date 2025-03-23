@@ -9,6 +9,7 @@ gem "appraisal"
 gem "standardrb"
 
 group :development, :test do
+  gem "mock_redis"
   # gem "mysql2"
   gem "net-imap"
   gem "net-pop"
