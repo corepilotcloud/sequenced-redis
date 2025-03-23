@@ -6,24 +6,15 @@ on:
       - '*'
   push:
     branches:
-      - master
+      - main
 jobs:
   sqlite:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: ['2.7', '3.0', '3.1']
+        ruby: ['3.3']
         gemfile:
-          - rails_5_2
-          - rails_6
-          - rails_6_1
           - rails_7
-          - rails_master
-        exclude:
-          - ruby: '3.0'
-            gemfile: 'rails_5_2'
-          - ruby: '3.1'
-            gemfile: 'rails_5_2'
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
       BUNDLE_PATH_RELATIVE_TO_CWD: true
@@ -53,18 +44,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: ['2.7', '3.0', '3.1']
+        ruby: ['3.3']
         gemfile:
-          - rails_5_2
-          - rails_6
-          - rails_6_1
           - rails_7
-          - rails_master
-        exclude:
-          - ruby: '3.0'
-            gemfile: 'rails_5_2'
-          - ruby: '3.1'
-            gemfile: 'rails_5_2'
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
       BUNDLE_PATH_RELATIVE_TO_CWD: true
