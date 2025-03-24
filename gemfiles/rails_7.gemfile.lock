@@ -4,6 +4,7 @@ PATH
     sequenced (4.0.0)
       activerecord (>= 3.0)
       activesupport (>= 3.0)
+      redis (>= 5.4)
 
 GEM
   remote: https://rubygems.org/
@@ -204,6 +205,10 @@ GEM
     rake (13.2.1)
     rdoc (6.13.0)
       psych (>= 4.0.0)
+    redis (5.4.0)
+      redis-client (>= 0.22.0)
+    redis-client (0.24.0)
+      connection_pool
     regexp_parser (2.10.0)
     reline (0.6.0)
       io-console (~> 0.5)
