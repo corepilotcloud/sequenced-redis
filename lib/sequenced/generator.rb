@@ -47,7 +47,7 @@ module Sequenced
     end
 
     def sequence_key
-      "sequenced:#{record.class}:#{column}:#{scope_to_key(*scope)}"
+      "sequenced:#{record.class.base_class}:#{column}:#{scope_to_key(*scope)}"
     end
 
     # private
