@@ -62,7 +62,7 @@ module Sequenced
       start_at = self.start_at.respond_to?(:call) ? self.start_at.call(record) : self.start_at
       last_id = find_last_record&.send(column) || 0
 
-      redis_client.set(sequence_key, max(last_id, start_at - 1), nx: true, ex: 86400)
+      redis_client.set(sequence_key, max(last_id, start_at - 1), nx: true)
     end
 
     def next_id_in_sequence(increment:)
